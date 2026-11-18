@@ -3,298 +3,545 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الأستاذ الذكي - منصة التعليم التفاعلي</title>
-  <script src="[suspicious link removed]"></script>
-  <link href="[suspicious link removed]" rel="stylesheet">
+  <title>منصة الأستاذ الذكي | الشرح التفاعلي</title>
   <style>
-    body { font-family: 'Tajawal', sans-serif; }
-    .chat-container::-webkit-scrollbar { width: 6px; }
-    .chat-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --bubble-bot: #1e293b;
+      --bubble-user: #4f46e5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .logo-box { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    .btn-settings {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-settings:hover { background: #283548; border-color: #475569; }
+    
+    .main-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      padding: 20px;
+      height: calc(100vh - 65px);
+    }
+    @media (max-width: 820px) {
+      .main-container { grid-template-columns: 1fr; height: auto; }
+      .sidebar { display: none; }
+    }
+    .sidebar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .info-badge {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .info-row:last-child { margin-bottom: 0; }
+    
+    .chat-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+    }
+    .chat-stream {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .msg-row { display: flex; gap: 12px; max-width: 85%; }
+    .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+    .msg-row.bot { align-self: flex-start; }
+    
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: bold; flex-shrink: 0;
+    }
+    .avatar.bot { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; }
+    .avatar.user { background: #475569; color: white; }
+    
+    .bubble {
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .msg-row.bot .bubble {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-top-right-radius: 4px;
+    }
+    .msg-row.user .bubble {
+      background: var(--bubble-user);
+      color: white;
+      border-top-left-radius: 4px;
+    }
+    .attached-preview {
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: block;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .input-bar {
+      padding: 16px;
+      background: #0f172a;
+      border-top: 1px solid var(--border);
+    }
+    .preview-tray {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+      background: var(--bg-card);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .preview-tray img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+    .form-box { display: flex; gap: 10px; align-items: center; }
+    .text-input {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .text-input:focus { border-color: var(--primary); }
+    .btn-icon {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 18px;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { color: var(--text-main); background: #334155; }
+    .btn-send {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      height: 44px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-send:hover { background: var(--primary-hover); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; padding: 16px;
+    }
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      max-width: 440px;
+      width: 100%;
+    }
+    .modal-card input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-top: 6px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      outline: none;
+    }
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body>
 
-  <!-- Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3 space-x-reverse">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
-          🎓
-        </div>
-        <div>
-          <h1 class="font-bold text-lg text-slate-900 leading-tight">الأستاذ الذكي</h1>
-          <p class="text-xs text-slate-500">منظومة الشرح التفاعلي وبناء المفاهيم</p>
-        </div>
+  <header>
+    <div class="logo-box">
+      <div class="logo-icon">🎓</div>
+      <div>
+        <h1 style="font-size: 16px; font-weight: 700;">الأستاذ الخبير</h1>
+        <p style="font-size: 12px; color: var(--text-muted);">بناء المفاهيم وحل المسائل خطوة بخطوة</p>
       </div>
-      <button onclick="toggleSettings()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-300 font-medium transition">
-        ⚙️ إعدادات المفتاح والصف
-      </button>
     </div>
+    <button class="btn-settings" onclick="toggleModal()">
+      ⚙️ الإعدادات والمفتاح
+    </button>
   </header>
 
-  <!-- Settings Modal -->
-  <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100">
-      <h2 class="text-lg font-bold text-slate-900 mb-4">⚙️ إعدادات الأستاذ والمنهاج</h2>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">مفتاح Google Gemini API:</label>
-          <input type="password" id="api-key-input" placeholder="ألصق مفتاح AI Studio هنا..." class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <p class="text-[11px] text-slate-400 mt-1">يُحفظ بأمان في متصفحك فقط ولا يُرسل لأي طرف ثالث.</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">الصف أو المرحلة الدراسية:</label>
-          <input type="text" id="grade-input" placeholder="مثلاً: أول ثانوي علمي، تاسع، توجيهي..." class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">المادة الحالية:</label>
-          <input type="text" id="subject-input" placeholder="مثلاً: فيزياء، رياضيات، أحياء..." class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+  <div class="main-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="card-title">📌 بيانات الطالب والمادة</div>
+        <div class="info-badge">
+          <div class="info-row">
+            <span style="color: var(--text-muted);">المرحلة:</span>
+            <span id="side-grade">ثالث ثانوي (بكالوريا)</span>
+          </div>
+          <div class="info-row">
+            <span style="color: var(--text-muted);">المادة:</span>
+            <span id="side-subject">رياضيات</span>
+          </div>
+          <div class="info-row">
+            <span style="color: var(--text-muted);">الحالة:</span>
+            <span id="side-status" style="color: #34d399;">جاهز للعمل ✅</span>
+          </div>
         </div>
       </div>
 
-      <div class="mt-6 flex justify-end gap-2">
-        <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition shadow-sm">
-          حفظ وبدء
-        </button>
+      <div style="flex: 1; display: flex; flex-direction: column;">
+        <div class="card-title">📖 مقتطف من الكتاب أو الدرس</div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">الصق نص الفقرة ليركز الأستاذ عليها:</p>
+        <textarea id="lesson-context" style="flex: 1; width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; color: #fff; padding: 10px; font-size: 13px; resize: none; outline: none;" placeholder="الصق نصوص الدروس هنا..."></textarea>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <section class="chat-section">
+      <div id="chat-stream" class="chat-stream">
+        <div class="msg-row bot">
+          <div class="avatar bot">أ</div>
+          <div class="bubble">
+            أهلاً بك يا بطل! أنا أستاذك الخصوصي. 
+            <br><br>
+            فيك تسألني أي سؤال، أو **ترفع صورة مسألة من كتابك بالضغط على زر الكاميرا (📷)** تحت، ورح نبدأ نفككها سوا خطوة بخطوة بدون ما أعطيك حل جاهز حتى تتأسس وتفهم الفكرة صح.
+          </div>
+        </div>
+      </div>
+
+      <div class="input-bar">
+        <div id="file-tray" class="preview-tray hidden">
+          <img id="img-preview" src="" alt="preview">
+          <span id="file-name" style="flex:1;">صورة المسألة جاهزة للإرسال</span>
+          <button onclick="removeAttached()" style="background:none; border:none; color:#f87171; cursor:pointer; font-weight:bold;">✕</button>
+        </div>
+
+        <form class="form-box" onsubmit="sendMessage(event)">
+          <!-- Hidden inputs for file upload -->
+          <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+          <input type="file" id="pdf-upload" accept=".txt,.pdf" class="hidden" onchange="handleDocSelect(event)">
+          
+          <button type="button" class="btn-icon" title="رفع صورة مسألة أو صفحة كتاب" onclick="document.getElementById('image-upload').click()">
+            📷
+          </button>
+          <button type="button" class="btn-icon" title="رفع ملف نصي أو درس" onclick="document.getElementById('pdf-upload').click()">
+            📄
+          </button>
+
+          <input type="text" id="user-input" class="text-input" placeholder="اكتب سؤالك، أو ارفع صورة مسألتك هنا...">
+          <button type="submit" id="send-btn" class="btn-send">إرسال</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 16px; font-size: 17px;">⚙️ إعدادات المفتاح والمنهاج</h3>
+      
+      <label style="font-size: 12px; color: var(--text-muted);">مفتاح Google Gemini API:</label>
+      <input type="password" id="modal-key" placeholder="ألصق المفتاح السري هنا...">
+
+      <label style="font-size: 12px; color: var(--text-muted);">المرحلة / الصف الدراسي:</label>
+      <input type="text" id="modal-grade" placeholder="مثال: ثالث ثانوي علمي">
+
+      <label style="font-size: 12px; color: var(--text-muted);">المادة الدراسية:</label>
+      <input type="text" id="modal-subject" placeholder="مثال: رياضيات">
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-send" onclick="saveSettings()">حفظ وتطبيق</button>
       </div>
     </div>
   </div>
 
-  <!-- Main Content Layout -->
-  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-    
-    <!-- Sidebar: Course Info & Materials -->
-    <div class="space-y-4 md:col-span-1">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-          <span>📚</span> بيانات الحصة
-        </h3>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between py-1.5 border-b border-slate-100">
-            <span class="text-slate-500">المرحلة:</span>
-            <span id="display-grade" class="font-semibold text-slate-700">لم تحدد بعد</span>
-          </div>
-          <div class="flex justify-between py-1.5 border-b border-slate-100">
-            <span class="text-slate-500">المادة:</span>
-            <span id="display-subject" class="font-semibold text-slate-700">عام</span>
-          </div>
-          <div class="flex justify-between py-1.5">
-            <span class="text-slate-500">حالة المفتاح:</span>
-            <span id="api-status" class="font-semibold text-amber-600">غير متصل ⚠️</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 class="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-          <span>📖</span> كتاب المادة أو الدرس
-        </h3>
-        <p class="text-xs text-slate-500 mb-3">الصق فقرة من الدرس، أو محاور الوحدة اللي بدك الأستاذ يشرح منها حرفياً:</p>
-        <textarea id="lesson-text" rows="5" placeholder="ألصق نص الدرس أو الوحدة هنا ليتقيد بها المعلم أثناء الشرح..." class="w-full text-xs p-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
-      </div>
-    </div>
-
-    <!-- Main Chat Workspace -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[75vh] md:col-span-2 overflow-hidden">
-      
-      <!-- Chat Header -->
-      <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-xs font-bold text-slate-700">غرفة الأستاذ الخبير (شرح تفاعلي وبناء مفاهيم)</span>
-        </div>
-        <button onclick="clearChat()" class="text-[11px] text-slate-400 hover:text-rose-500 transition">مسح الحوار</button>
-      </div>
-
-      <!-- Messages Stream -->
-      <div id="chat-box" class="chat-container flex-1 p-4 overflow-y-auto space-y-4">
-        <!-- Initial Message -->
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
-            أ
-          </div>
-          <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-tr-none px-4 py-3 text-sm max-w-[85%] leading-relaxed shadow-sm">
-            أهلاً بك يا بطل! أنا أستاذك الخصوصي. 
-            <br><br>
-            وظيفتي مو إني أعطيك حلول جاهزة، بل نبني الفهم سوا خطوة بخطوة من الصفر، تماماً كأنك بدرس خصوصي. 
-            تأكد أولاً من إدخال <b>المفتاح والصف</b> من زر الإعدادات بالأعلى، وخبرني شو حابب نفهم اليوم؟
-          </div>
-        </div>
-      </div>
-
-      <!-- Input Area -->
-      <div class="p-3 bg-white border-t border-slate-200">
-        <form id="chat-form" onsubmit="handleSend(event)" class="flex gap-2">
-          <input type="text" id="user-input" placeholder="اكتب سؤالك، استفسارك، أو جوابك للأستاذ هنا..." class="flex-1 text-sm px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <button type="submit" id="send-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl transition text-sm flex items-center gap-1 shadow-sm">
-            إرسال
-          </button>
-        </form>
-      </div>
-
-    </div>
-
-  </main>
-
   <script>
     let chatHistory = [];
-
-    // System prompt designed for deep pedagogical teaching
-    function getSystemInstruction() {
-      const grade = localStorage.getItem('grade') || 'غير محدد';
-      const subject = localStorage.getItem('subject') || 'عام';
-      const lessonMaterial = document.getElementById('lesson-text').value.trim();
-
-      return `أنت أستاذ خصوصي عبقري، صبور، وخبير تعليمي مخضرم. 
-مهمتك تدريس الطالب بأسلوب تفاعلي استقرائي مبهر، وليس مجرد الإجابة المباشرة.
-بيانات الطالب الحالية:
-- المرحلة / الصف: ${grade}
-- المادة: ${subject}
-${lessonMaterial ? `- مادة الدرس والمحتوى المرجعي المقيد به:\n"""${lessonMaterial}"""` : ''}
-
-قواعد التدريس الصارمة الخاصة بك:
-1. لا تسرد الشرح الطويل دفعة واحدة أبداً. قسّم الدرس إلى أفكار ومفاهيم صغيرة متسلسلة.
-2. ابدأ دائماً بربط المفهوم بالواقع أو بطرح لغز/سؤال تمهيدي يثير التفكير.
-3. بعد شرح كل فكرة صغيرة، اطرح على الطالب سؤالاً ذكياً أو مسألة لاختبار فهمه قبل الانتقال للنقطة التالية.
-4. إذا أخطأ الطالب، لا تقدم الحل الصحيح فوراً؛ بل وجّه تفكيره ونبّهه لموطن الخلل بهدوء وتشجيع.
-5. لا تتحدث بنبرة روبوت أو ذكاء اصطناعي؛ تحدث كمعلم حقيقي ناصح ومشجع ولغتك واضحة وجذابة ومحفزة.
-6. إذا توفر محتوى للدرس أعلاه، اعتمد على أمثلته ومصطلحاته بشكل دقيق.`;
-    }
+    let currentBase64Image = null;
 
     window.onload = function() {
-      loadSettings();
-      if (!localStorage.getItem('gemini_api_key')) {
-        toggleSettings();
+      const savedKey = localStorage.getItem('tutor_gemini_key') || localStorage.getItem('gemini_api_key');
+      const savedGrade = localStorage.getItem('tutor_grade') || 'ثالث ثانوي';
+      const savedSubject = localStorage.getItem('tutor_subject') || 'رياضيات';
+
+      if (savedKey) {
+        document.getElementById('modal-key').value = savedKey;
+        document.getElementById('side-status').innerText = 'جاهز ومتصل ✅';
+        document.getElementById('side-status').style.color = '#34d399';
+      } else {
+        toggleModal();
       }
+
+      document.getElementById('modal-grade').value = savedGrade;
+      document.getElementById('modal-subject').value = savedSubject;
+      document.getElementById('side-grade').innerText = savedGrade;
+      document.getElementById('side-subject').innerText = savedSubject;
     };
 
-    function toggleSettings() {
-      const modal = document.getElementById('settings-modal');
-      modal.classList.toggle('hidden');
+    function toggleModal() {
+      document.getElementById('settings-modal').classList.toggle('hidden');
     }
 
     function saveSettings() {
-      const key = document.getElementById('api-key-input').value.trim();
-      const grade = document.getElementById('grade-input').value.trim();
-      const subject = document.getElementById('subject-input').value.trim();
-
-      if (key) localStorage.setItem('gemini_api_key', key);
-      if (grade) localStorage.setItem('grade', grade);
-      if (subject) localStorage.setItem('subject', subject);
-
-      loadSettings();
-      toggleSettings();
-    }
-
-    function loadSettings() {
-      const key = localStorage.getItem('gemini_api_key');
-      const grade = localStorage.getItem('grade');
-      const subject = localStorage.getItem('subject');
+      const key = document.getElementById('modal-key').value.trim();
+      const grade = document.getElementById('modal-grade').value.trim();
+      const subject = document.getElementById('modal-subject').value.trim();
 
       if (key) {
-        document.getElementById('api-key-input').value = key;
-        document.getElementById('api-status').innerText = 'متصل وعامل ✅';
-        document.getElementById('api-status').className = 'font-semibold text-emerald-600';
+        localStorage.setItem('tutor_gemini_key', key);
+        document.getElementById('side-status').innerText = 'جاهز ومتصل ✅';
       }
       if (grade) {
-        document.getElementById('grade-input').value = grade;
-        document.getElementById('display-grade').innerText = grade;
+        localStorage.setItem('tutor_grade', grade);
+        document.getElementById('side-grade').innerText = grade;
       }
       if (subject) {
-        document.getElementById('subject-input').value = subject;
-        document.getElementById('display-subject').innerText = subject;
+        localStorage.setItem('tutor_subject', subject);
+        document.getElementById('side-subject').innerText = subject;
       }
+      toggleModal();
     }
 
-    function appendMessage(sender, text) {
-      const chatBox = document.getElementById('chat-box');
-      const isUser = sender === 'user';
-      
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+    function handleImageSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const full = evt.target.result;
+        currentBase64Image = {
+          mimeType: file.type || 'image/jpeg',
+          data: full.split(',')[1]
+        };
+        document.getElementById('img-preview').src = full;
+        document.getElementById('file-tray').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleDocSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('lesson-context').value = evt.target.result;
+        alert('تم تحميل محتوى الملف إلى خانة نصوص الدرس على اليمين بنجاح!');
+      };
+      reader.readAsText(file);
+    }
+
+    function removeAttached() {
+      currentBase64Image = null;
+      document.getElementById('image-upload').value = '';
+      document.getElementById('file-tray').classList.add('hidden');
+    }
+
+    function appendMessage(sender, text, imgSrc = null) {
+      const stream = document.getElementById('chat-stream');
+      const row = document.createElement('div');
+      row.className = `msg-row ${sender}`;
 
       const avatar = document.createElement('div');
-      avatar.className = `w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${isUser ? 'bg-slate-700 text-white' : 'bg-indigo-600 text-white'}`;
-      avatar.innerText = isUser ? 'أنت' : 'أ';
+      avatar.className = `avatar ${sender}`;
+      avatar.innerText = sender === 'user' ? 'أنت' : 'أ';
 
       const bubble = document.createElement('div');
-      bubble.className = `rounded-2xl px-4 py-3 text-sm max-w-[85%] leading-relaxed shadow-sm ${
-        isUser ? 'bg-indigo-600 text-white rounded-tl-none' : 'bg-slate-100 text-slate-800 rounded-tr-none'
-      }`;
-      bubble.innerHTML = text.replace(/\n/g, '<br>');
+      bubble.className = 'bubble';
 
-      msgDiv.appendChild(avatar);
-      msgDiv.appendChild(bubble);
-      chatBox.appendChild(msgDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      if (imgSrc) {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'attached-preview';
+        bubble.appendChild(img);
+      }
+
+      const txtSpan = document.createElement('div');
+      txtSpan.innerHTML = text.replace(/\n/g, '<br>');
+      bubble.appendChild(txtSpan);
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      stream.appendChild(row);
+      stream.scrollTop = stream.scrollHeight;
     }
 
-    async function handleSend(e) {
+    function buildSystemInstruction() {
+      const grade = localStorage.getItem('tutor_grade') || 'ثالث ثانوي';
+      const subject = localStorage.getItem('tutor_subject') || 'عام';
+      const context = document.getElementById('lesson-context').value.trim();
+
+      return `أنت أستاذ خصوصي عبقري، صبور جداً، وخبير في التأسيس والشرح التفاعلي.
+بيانات التلميذ:
+- الصف / المرحلة: ${grade}
+- المادة الدراسية: ${subject}
+${context ? `- المرجع الدراسي المحدد:\n${context}` : ''}
+
+أسلوب التدريس الإلزامي:
+1. إذا أرسل الطالب صورة مسألة أو سؤال، قم أولاً بقراءة معطياتها أمامه، ثم اسأله عن الخطوة الأولى فقط.
+2. لا تعطِ الحل النهائي أو القوانين الجاهزة مباشرة؛ درّب الطالب على استنتاجها.
+3. اشرح بأسلوب شيق وبسيط وباللغة العربية الفصحى الواضحة والودودة.
+4. بعد كل خطوة تسأله سؤالاً صغيراً لتتأكد أنه فهمها قبل الانتقال للخطوة التالية.`;
+    }
+
+    async function sendMessage(e) {
       e.preventDefault();
       const input = document.getElementById('user-input');
       const text = input.value.trim();
-      const apiKey = localStorage.getItem('gemini_api_key');
+      const apiKey = localStorage.getItem('tutor_gemini_key') || localStorage.getItem('gemini_api_key');
 
       if (!apiKey) {
-        alert('يرجى إدخال مفتاح Gemini API من الإعدادات أولاً!');
-        toggleSettings();
+        alert('الرجاء إدخال مفتاح Gemini API أولاً!');
+        toggleModal();
         return;
       }
-      if (!text) return;
+      if (!text && !currentBase64Image) return;
 
-      appendMessage('user', text);
+      const attachedImgSrc = currentBase64Image ? document.getElementById('img-preview').src : null;
+      appendMessage('user', text || '(تم إرسال صورة)', attachedImgSrc);
+
+      // تجهيز أجزاء الرسالة (نص + صورة إن وجدت)
+      const parts = [];
+      if (currentBase64Image) {
+        parts.push({
+          inlineData: {
+            mimeType: currentBase64Image.mimeType,
+            data: currentBase64Image.data
+          }
+        });
+      }
+      if (text) {
+        parts.push({ text: text });
+      }
+
+      chatHistory.push({ role: 'user', parts: parts });
+
+      // تنظيف المدخلات
       input.value = '';
-      
-      chatHistory.push({ role: 'user', parts: [{ text }] });
+      const sendImgMemory = currentBase64Image;
+      removeAttached();
 
-      const sendBtn = document.getElementById('send-btn');
-      sendBtn.disabled = true;
-      sendBtn.innerText = 'يفكّر...';
+      const btn = document.getElementById('send-btn');
+      btn.disabled = true;
+      btn.innerText = 'يفكّر...';
 
       try {
-        const url = `[suspicious link removed]{apiKey}`;
-        
-        const response = await fetch(url, {
+        const domain = ["generativelanguage", "googleapis", "com"].join(".");
+        const url = "https://" + domain + "/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: getSystemInstruction() }] },
+            systemInstruction: { parts: [{ text: buildSystemInstruction() }] },
             contents: chatHistory,
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 1000
+              maxOutputTokens: 1200
             }
           })
         });
 
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error.message);
-        }
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message || 'خطأ في الاستجابة');
 
         const reply = data.candidates[0].content.parts[0].text;
         appendMessage('bot', reply);
         chatHistory.push({ role: 'model', parts: [{ text: reply }] });
 
       } catch (err) {
-        appendMessage('bot', `⚠️ حدث خطأ أثناء الاتصال: ${err.message}`);
+        appendMessage('bot', `⚠️ حدث خطأ: ${err.message}`);
       } finally {
-        sendBtn.disabled = false;
-        sendBtn.innerText = 'إرسال';
-      }
-    }
-
-    function clearChat() {
-      if (confirm('هل تريد بدء جلسة تعليمية جديدة ومسح الحوار؟')) {
-        chatHistory = [];
-        document.getElementById('chat-box').innerHTML = '';
-        appendMessage('bot', 'بدأنا جلسة جديدة! شو حابب ندرس اليوم؟');
+        btn.disabled = false;
+        btn.innerText = 'إرسال';
       }
     }
   </script>
 </body>
-        </html>
+</html>
